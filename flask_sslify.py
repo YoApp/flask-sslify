@@ -38,10 +38,11 @@ class SSLify(object):
         criteria = [
             request.is_secure,
             current_app.debug,
-            request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+            request.headers.get('X-Forwarded-Proto', 'http') == 'https',
         ]
 
-        if not any(criteria):
+        enabled = current_app.config.get('SSLIFY_ENABLED')
+        if not any(criteria) and enabled:
             if request.url.startswith('http://'):
                 url = request.url.replace('http://', 'https://', 1)
                 code = 302
