@@ -8,7 +8,10 @@ YEAR_IN_SECS = 31536000
 class SSLify(object):
     """Secures your Flask App."""
 
+    excluded_endpoints = None
+
     def __init__(self, app=None, age=YEAR_IN_SECS, subdomains=False, permanent=False):
+        self.excluded_endpoints = []
         self.hsts_age = age
         self.hsts_include_subdomains = subdomains
         self.permanent = permanent
@@ -21,6 +24,11 @@ class SSLify(object):
 
         app.before_request(self.redirect_to_ssl)
         app.after_request(self.set_hsts_header)
+
+    def exclude_endpoint(self, fn):
+        """Excludes an endpoint."""
+        self.excluded_endpoints.append(fn)
+        return fn
 
     @property
     def hsts_header(self):
@@ -39,6 +47,8 @@ class SSLify(object):
             request.is_secure,
             current_app.debug,
             request.headers.get('X-Forwarded-Proto', 'http') == 'https',
+            current_app.view_functions[request.endpoint] in \
+                self.excluded_endpoints
         ]
 
         enabled = current_app.config.get('SSLIFY_ENABLED')
