@@ -47,7 +47,7 @@ class SSLify(object):
             request.is_secure,
             current_app.debug,
             request.headers.get('X-Forwarded-Proto', 'http') == 'https',
-            current_app.view_functions[request.endpoint] in \
+            current_app.view_functions.get(request.endpoint) in \
                 self.excluded_endpoints
         ]
 
